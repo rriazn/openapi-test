@@ -1,0 +1,18 @@
+[tool.hatch.envs.default]
+dependencies = [
+  "argon2-cffi",
+  "click",
+  "fastapi==0.135.2",
+  "pydantic==2.12.5",
+  "PyJWT",
+  "python-multipart",
+  "sqlmodel",
+  "uvicorn==0.42.0",
+]
+
+[tool.hatch.envs.default.env-vars]
+PYTHONPATH = "src"
+
+[tool.hatch.envs.default.scripts]
+backend = "python -c \"from api.main import main; main()\""
+backend-cli = "python src/cli.py {args:reset_db}"
