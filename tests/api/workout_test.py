@@ -63,3 +63,23 @@ def test_create_workout_exercise_does_not_exist(client: TestClient, token: str):
         "exercise_ids": [999999]
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 404, "Should return 404 when trying to create workout with non-existent exercise"
+
+
+def test_delete_workout(client: TestClient, token: str, workout: Workout):
+    response = client.delete(f"/api/workouts/{workout.id}", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 200, "Should return 200 for successful deletion"
+    assert response.json()["message"] == "Workout deleted successfully", "Response message should indicate successful deletion"
+
+    # Verify workout is actually deleted
+    response = client.get(f"/api/workouts/{workout.id}", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 404, "Deleted workout should not be found"
+
+
+def test_delete_workout_not_owned(client: TestClient, token: str, workout_other_user: Workout):
+    response = client.delete(f"/api/workouts/{workout_other_user.id}", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 403, "Should return 403 when trying to delete workout not owned by user"
+
+
+def test_delete_workout_does_not_exist(client: TestClient, token: str):
+    response = client.delete(f"/api/workouts/999999", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 404, "Should return 404 when trying to delete workout that does not exist"

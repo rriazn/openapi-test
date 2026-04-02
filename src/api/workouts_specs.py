@@ -22,6 +22,11 @@ class WorkoutCreateRequest(BaseModel):
 
 
 class WorkoutCreateResponse(BaseModel):
+    id: int = Field(description="ID of the created workout")
     name: str = Field(description="Name of the created workout")
     owner: str = Field(description="Username of the workout owner")
     exercises: List[str] = Field(description="List of exercise names included in the workout")
+
+
+class ActionResponse(BaseModel):
+    message: str = Field(description="Message describing the result of the action")

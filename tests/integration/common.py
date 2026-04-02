@@ -34,11 +34,11 @@ def make_request(url, method="GET", headers={}, data=None):
             data = None
         else:
             if isinstance(data, dict):
-                data = urllib.parse.urlencode(data).encode()
+                data = urllib.parse.urlencode(data).encode("utf-8")
                 headers["Content-Type"] = "application/x-www-form-urlencoded"
             elif isinstance(data, str):
-                data = data.encode()
-                headers["Content-Type"] = "text/plain"
+                data = data.encode("utf-8")
+                headers["Content-Type"] = "application/json"
     req = urllib.request.Request(url, method=method, headers=headers, data=data)
 
     try:
@@ -63,3 +63,12 @@ def make_request(url, method="GET", headers={}, data=None):
             "content": str(e),
             "json": lambda: {},
         }
+    
+
+def authenticate_user(username="admin", password= "password") -> str:
+    """Authenticate a user and return the access token."""
+    response = make_request(f"{api_url()}/login", method="POST", data={"username": username, "password": password})
+    assert response["status"] == 200, f"Authentication failed: {response['content']}"
+    token_data = response["json"]()
+    assert "access_token" in token_data, "Access token not found in authentication response"
+    return token_data["access_token"]

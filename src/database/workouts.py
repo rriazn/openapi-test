@@ -17,3 +17,14 @@ def insert_workout(db: Session, workout: Workout):
     db.commit()
     db.refresh(workout)
     return workout
+
+
+def remove_workout(db: Session, workout_id: int):
+    try:
+        workout = get_workout_by_id(db, workout_id)
+        if workout:
+            db.delete(workout)
+            db.commit()
+    except Exception as e:
+        db.rollback()
+        raise e
