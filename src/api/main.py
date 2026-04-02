@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
+import api.workouts as workouts
 import api.auth as auth
 import api.exercises as exercises
 
@@ -9,6 +10,7 @@ app = FastAPI(title="OpenAPI Test Server")
 
 app.include_router(auth.router, prefix="/api", tags=["Authentication"])
 app.include_router(exercises.router, prefix="/api", tags=["Exercises"])
+app.include_router(workouts.router, prefix="/api", tags=["Workouts"])
 
 
 @app.get("/", include_in_schema=False)

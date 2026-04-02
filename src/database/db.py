@@ -1,3 +1,5 @@
+import os
+
 from sqlmodel import SQLModel, Session, create_engine
 
 
@@ -5,9 +7,14 @@ def _load_models() -> None:
     # Register SQLModel tables in metadata before create_all/drop_all.
     import models  # noqa: F401
 
+
+def get_database_url() -> str:
+    # Production/dev default is app.db; tests can override via DATABASE_URL.
+    return os.getenv("DATABASE_URL", "sqlite:///./app.db")
+
+
 def get_engine():
-    database_url = "sqlite:///./test.db"  # Use the configurable database URL
-    return create_engine(database_url)
+    return create_engine(get_database_url())
 
 
 def get_session():

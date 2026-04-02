@@ -32,5 +32,6 @@ class Exercise(SQLModel, table=True):
 class Workout(SQLModel, table=True):
     __tablename__ = "workouts"
     id: int = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id")
+    name: str = Field(index=True)
+    user_name: str = Field(foreign_key="users.id")
     exercises: List["Exercise"] = Relationship(link_model=ExerciseWorkoutLink)
