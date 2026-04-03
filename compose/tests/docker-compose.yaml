@@ -1,0 +1,9 @@
+services:
+  test-runner:
+    image: ${IMAGE_NAME:-backend}:${IMAGE_TAG:-latest}
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./tests:/app/tests
+    command: \
+      ${TEST_COMMAND:-pytest tests}

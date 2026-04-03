@@ -1,0 +1,23 @@
+services:
+  backend:
+    image: ${IMAGE_NAME:-backend}:${IMAGE_TAG:-latest}
+    ports:
+      - "7000:7000"
+    networks:
+      - app-network
+    depends_on:
+      - setup-db
+  setup-db:
+    image: ${IMAGE_NAME:-backend}:${IMAGE_TAG:-latest}
+    mounts:
+      - ./Exercises.csv:/app/Exercises.csv
+    command: \
+      hatch run backend-cli reset-db && \
+      hatch run backend-cli import-exercises Exercises.csv
+    networks:
+      - app-network
+    restart: "no"
+
+networks:
+  app-network:
+    external: true
