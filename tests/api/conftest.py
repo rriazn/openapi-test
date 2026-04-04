@@ -19,9 +19,9 @@ from auth_utils import get_token_for_user
 from api.main import app
 from database.db import get_db, reset_db
 from database.users import create_user, get_user_by_username
-from models import Workout, Exercise, User
+from models import Routine, Exercise, User
 from database.exercises import insert_exercise
-from database.workouts import insert_workout
+from database.routines import insert_routine
 
 
 @pytest.fixture(autouse=True)
@@ -100,21 +100,21 @@ def exercise(random_string, db_session):
 
 
 @pytest.fixture()
-def workout(user_instance, exercise, db_session):
-    workout_name = f"workout_{user_instance[0].username}_{exercise.name}"
-    workout = Workout(name=workout_name, user_name=user_instance[0].username, exercises=[exercise])
-    created_workout = insert_workout(db_session, workout)
-    return created_workout
+def routine(user_instance, exercise, db_session):
+    routine_name = f"routine_{user_instance[0].username}_{exercise.name}"
+    routine = Routine(name=routine_name, user_name=user_instance[0].username, exercises=[exercise])
+    created_routine = insert_routine(db_session, routine)
+    return created_routine
 
 
 @pytest.fixture()
-def workout_other_user(random_string, exercise, db_session):
+def routine_other_user(random_string, exercise, db_session):
     # Create a different user
     other_username = f"user_{random_string}_2"
     create_user(db_session, other_username, "testpassword")
 
-    # Create a workout for the other user
-    workout_name = f"workout_{other_username}_{exercise.name}"
-    workout = Workout(name=workout_name, user_name=other_username, exercises=[exercise])
-    created_workout = insert_workout(db_session, workout)
-    return created_workout
+    # Create a routine for the other user
+    routine_name = f"routine_{other_username}_{exercise.name}"
+    routine = Routine(name=routine_name, user_name=other_username, exercises=[exercise])
+    created_routine = insert_routine(db_session, routine)
+    return created_routine
