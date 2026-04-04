@@ -28,5 +28,16 @@ class RoutineCreateResponse(BaseModel):
     exercises: List[str] = Field(description="List of exercise names included in the routine")
 
 
+class RoutineEditRequest(BaseModel):
+    routine_name: str = Field(description="New name of the routine", examples=["Updated Routine Name"])
+    exercise_add: List[int] = Field(description="List of exercise IDs to add to the routine")
+    exercise_remove: List[int] = Field(description="List of exercise IDs to remove from the routine")
+
+
+class RoutineEditResponse(BaseModel):
+    name: str = Field(description="Name of the edited routine")
+    exercises: List[str] = Field(description="Updated list of exercise names included in the routine")
+
+
 class ActionResponse(BaseModel):
     message: str = Field(description="Message describing the result of the action")
