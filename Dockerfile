@@ -11,8 +11,4 @@ COPY src ./src
 COPY pyproject.toml ./
 EXPOSE 7000
 
-# Add app user, run application as app user
-RUN adduser app
-USER app
-
 CMD ["hatch", "run", "backend"]
