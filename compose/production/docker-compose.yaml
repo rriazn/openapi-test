@@ -1,23 +1,29 @@
 services:
   backend:
-    image: ${IMAGE_NAME:-backend}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
     ports:
       - "7000:7000"
+    volumes:
+      - ../../app.db:/app/app.db
     networks:
       - app-network
     depends_on:
-      - setup-db
+      setup-db:
+        condition: service_completed_successfully
   setup-db:
-    image: ${IMAGE_NAME:-backend}:${IMAGE_TAG:-latest}
-    mounts:
-      - ./Exercises.csv:/app/Exercises.csv
-    command: \
-      hatch run backend-cli reset-db && \
-      hatch run backend-cli import-exercises Exercises.csv
+    image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
+    volumes:
+      - ../../Exercises.csv:/app/Exercises.csv:ro
+      - ../../app.db:/app/app.db
+    command: >
+      sh -c "
+        hatch run backend-cli reset-db --create-default-user &&
+        hatch run backend-cli import-exercises Exercises.csv
+      "
     networks:
       - app-network
     restart: "no"
 
 networks:
   app-network:
-    external: true
+    driver: bridge
