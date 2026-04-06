@@ -27,10 +27,8 @@ def get_routine_detail(routine_id: int, token: str = Depends(oauth2_scheme), db:
     """Get details of a specific routine."""
     username = get_username_from_token(token)
     routine = get_routine_by_id(db, routine_id)
-    if not routine:
+    if not routine or routine.user_name != username:
         raise HTTPException(status_code=404, detail="Routine not found")
-    if routine.user_name != username:
-        raise HTTPException(status_code=403, detail="User is not the owner of this routine")
     return RoutineDetailResponse(
         name=routine.name,
         owner=routine.user_name,
@@ -71,10 +69,8 @@ def delete_routine(routine_id: int, token: str = Depends(oauth2_scheme), db: Ses
     """Delete a routine owned by the user."""
     username = get_username_from_token(token)
     routine = get_routine_by_id(db, routine_id)
-    if not routine:
+    if not routine or routine.user_name != username:
         raise HTTPException(status_code=404, detail="Routine not found")
-    if routine.user_name != username:
-        raise HTTPException(status_code=403, detail="User is not the owner of this routine")
     try:
         remove_routine(db, routine_id)
     except Exception as e:
@@ -87,10 +83,8 @@ def edit_routine(routine_id: int, request: RoutineEditRequest, token: str = Depe
     """Edit a routine owned by the user."""
     username = get_username_from_token(token)
     routine = get_routine_by_id(db, routine_id)
-    if not routine:
+    if not routine or routine.user_name != username:
         raise HTTPException(status_code=404, detail="Routine not found")
-    if routine.user_name != username:
-        raise HTTPException(status_code=403, detail="User is not the owner of this routine")
     
     # Update routine name
     routine.name = request.routine_name
