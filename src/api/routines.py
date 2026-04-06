@@ -4,6 +4,7 @@ from sqlmodel import Session
 
 from api.routines_specs import ActionResponse, RoutineCreateResponse, RoutineEditResponse, RoutineGetResponse, RoutineCreateRequest, RoutineEditRequest, RoutineDetailResponse, RoutineGetListItem
 from auth_utils import get_username_from_token
+from controller.routines import update_routine
 from database.db import get_db
 from database.routines import get_routines_for_user, insert_routine, get_routine_by_id, remove_routine
 from database.exercises import get_exercise_by_id
@@ -86,28 +87,23 @@ def edit_routine(routine_id: int, request: RoutineEditRequest, token: str = Depe
     if not routine or routine.user_name != username:
         raise HTTPException(status_code=404, detail="Routine not found")
     
-    # Update routine name
-    routine.name = request.routine_name
-    
-    # Add exercises
+    exercises_add = []
     for exercise_id in request.exercise_add:
         exercise = get_exercise_by_id(db, exercise_id)
         if not exercise:
             raise HTTPException(status_code=404, detail=f"Exercise with id {exercise_id} not found")
-        if exercise not in routine.exercises:
-            routine.exercises.append(exercise)
+        exercises_add.append(exercise)
     
-    # Remove exercises
+    exercises_remove = []
     for exercise_id in request.exercise_remove:
         exercise = get_exercise_by_id(db, exercise_id)
-        if exercise in routine.exercises:
-            routine.exercises.remove(exercise)
-    
+        if not exercise:
+            raise HTTPException(status_code=404, detail=f"Exercise with id {exercise_id} not found")
+        exercises_remove.append(exercise)
+
     try:
-        db.commit()
-        db.refresh(routine)
+        routine = update_routine(db, routine, request.routine_name, exercises_add, exercises_remove)
     except Exception as e:
-        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     
     return RoutineEditResponse(

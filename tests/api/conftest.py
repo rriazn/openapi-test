@@ -100,6 +100,14 @@ def exercise(random_string, db_session):
 
 
 @pytest.fixture()
+def exercise_2(random_string, db_session):
+    exercise_name = f"exercise_{random_string}_2"
+    exercise = Exercise(name=exercise_name, type="WR")
+    inserted_exercise = insert_exercise(db_session, exercise)
+    return inserted_exercise
+
+
+@pytest.fixture()
 def routine(user_instance, exercise, db_session):
     routine_name = f"routine_{user_instance[0].username}_{exercise.name}"
     routine = Routine(name=routine_name, user_name=user_instance[0].username, exercises=[exercise])
