@@ -12,6 +12,7 @@ dependencies = [
   "python-multipart",
   "sqlmodel",
   "uvicorn==0.42.0",
+  "pydantic_settings",
 ]
 
 [tool.hatch.envs.default.env-vars]
@@ -20,7 +21,7 @@ PYTHONPATH = "src"
 [tool.hatch.envs.default.scripts]
 backend = "python -c \"from api.main import main; main()\""
 backend-cli = "python src/cli.py {args:reset_db}"
-backend-integration-tests = "pytest tests/integration"
+backend-integration-tests = "pytest tests/integration -v"
 
 [build-system]
 requires = ["hatchling>=1.17.0"]

@@ -15,3 +15,5 @@ uvicorn==0.42.0
 pytest
 argon2-cffi
 python-multipart
+pydantic_settings
+sqlmodel

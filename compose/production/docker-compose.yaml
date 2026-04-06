@@ -4,9 +4,12 @@ services:
     ports:
       - "7000:7000"
     volumes:
-      - ../../app.db:/app/app.db
+      - ./db:/app/db
     networks:
       - app-network
+    environment:
+      - DATABASE_URL=sqlite:////app/db/app.db
+    restart: unless-stopped
     depends_on:
       setup-db:
         condition: service_completed_successfully
@@ -14,11 +17,15 @@ services:
     image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
     volumes:
       - ../../Exercises.csv:/app/Exercises.csv:ro
-      - ../../app.db:/app/app.db
+      - ../../tests/integration/Users-test.csv:/app/Users-test.csv:ro
+      - ./db:/app/db
+    environment:
+      - DATABASE_URL=sqlite:////app/db/app.db
     command: >
       sh -c "
         hatch run backend-cli reset-db --create-default-user &&
-        hatch run backend-cli import-exercises Exercises.csv
+        hatch run backend-cli import-exercises Exercises.csv &&
+        hatch run backend-cli import-users Users-test.csv
       "
     networks:
       - app-network

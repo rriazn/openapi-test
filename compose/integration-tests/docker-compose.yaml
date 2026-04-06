@@ -1,0 +1,56 @@
+services:
+  backend:
+    image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./db:/app/db
+    networks:
+      - integration-tests
+    environment:
+      - DATABASE_URL=sqlite:////app/db/app.db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      setup-db:
+        condition: service_completed_successfully
+  setup-db:
+    image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
+    volumes:
+      - ../../Exercises.csv:/app/Exercises.csv:ro
+      - ./db:/app/db
+    environment:
+      - DATABASE_URL=sqlite:////app/db/app.db
+    command: >
+      sh -c "
+        hatch run backend-cli reset-db --create-default-user &&
+        hatch run backend-cli import-exercises Exercises.csv
+      "
+    networks:
+      - integration-tests
+    restart: "no"
+  integration-tests:
+    image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
+    volumes:
+      - ../../tests:/app/tests
+    command: >
+      sh -c "
+        echo 'Wait for backend to be healthy...' &&
+        hatch run backend-integration-tests
+      "
+    networks:
+      - integration-tests
+    environment:
+      - backend_url=http://backend:7000
+    depends_on:
+      backend:
+        condition: service_healthy
+
+networks:
+  integration-tests:
+    driver: bridge
