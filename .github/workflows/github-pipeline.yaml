@@ -125,5 +125,6 @@ jobs:
       - name: Run Integration tests
         shell: bash
         run: |
+          chmod +x ./scripts/run-integration-tests.sh
           ./scripts/run-integration-tests.sh --production-image ${{ secrets.DOCKER_USERNAME }}/openapi-test:${{ needs.checkout-git-tag.outputs.unique_tag }}-production \
           --test-image ${{ secrets.DOCKER_USERNAME }}/openapi-test:${{ needs.checkout-git-tag.outputs.unique_tag }}-integration
