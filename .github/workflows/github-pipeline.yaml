@@ -112,7 +112,7 @@ jobs:
           export IMAGE_TAG="${{ needs.checkout-git-tag.outputs.unique_tag }}-development"
           docker pull $IMAGE_NAME:$IMAGE_TAG
           cd compose/development
-          docker-compose -f docker-compose.yaml run --rm test-runner
+          docker compose -f docker-compose.yaml run --rm test-runner
       - name: Run API tests
         shell: bash
         run: |
@@ -121,7 +121,7 @@ jobs:
           export IMAGE_TAG="${{ needs.checkout-git-tag.outputs.unique_tag }}-development"
           docker pull $IMAGE_NAME:$IMAGE_TAG
           cd compose/development
-          docker-compose -f docker-compose.yaml run --rm test-runner
+          docker compose -f docker-compose.yaml run --rm test-runner
       - name: Run Integration tests
         shell: bash
         run: |
