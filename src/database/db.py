@@ -1,6 +1,5 @@
-import os
-
 from sqlmodel import SQLModel, Session, create_engine
+from config import get_settings
 
 
 def _load_models() -> None:
@@ -8,13 +7,8 @@ def _load_models() -> None:
     import models  # noqa: F401
 
 
-def get_database_url() -> str:
-    # Production/dev default is app.db; tests can override via DATABASE_URL.
-    return os.getenv("DATABASE_URL", "sqlite:///./app.db")
-
-
 def get_engine():
-    return create_engine(get_database_url())
+    return create_engine(get_settings().database_url)
 
 
 def get_session():

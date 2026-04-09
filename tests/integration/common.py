@@ -4,9 +4,11 @@ import urllib.request
 import urllib.parse
 import json
 
+from config import get_settings
+
 def api_url():
     """Return the base URL for the API."""
-    return "http://localhost:7000/api"
+    return f"{get_settings().backend_url}/api"
 
 
 def wait_for_api(timeout=30):
@@ -15,7 +17,7 @@ def wait_for_api(timeout=30):
     start_time = time.time()
     while time.time() - start_time < timeout:
         try:
-            response = make_request("http://localhost:7000/health")
+            response = make_request(f"{get_settings().backend_url}/health")
             if response["status"] == 200:
                 return True
         except Exception:

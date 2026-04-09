@@ -1,0 +1,9 @@
+services:
+  test-runner:
+    image: ${IMAGE_NAME:-openapi-test}:${IMAGE_TAG:-0.1}
+    ports:
+      - "7000:7000"
+    volumes:
+      - ../../tests:/app/tests
+    command: |
+      ${TEST_COMMAND:-pytest tests}
