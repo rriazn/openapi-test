@@ -1,6 +1,6 @@
 services:
   backend:
-    image: ${PRODUCTION_IMAGE:-openapi-test:latest-production}
+    image: ${PRODUCTION_IMAGE:-openapi-test:0.1}
     ports:
       - "7000:7000"
     volumes:
@@ -20,7 +20,7 @@ services:
       setup-db:
         condition: service_completed_successfully
   setup-db:
-    image: ${PRODUCTION_IMAGE:-openapi-test:latest-production}
+    image: ${PRODUCTION_IMAGE:-openapi-test:0.1}
     volumes:
       - ../../Exercises.csv:/app/Exercises.csv:ro
       - ./db:/app/db
@@ -35,7 +35,7 @@ services:
       - integration-tests
     restart: "no"
   integration-tests:
-    image: ${TEST_IMAGE:-openapi-test:latest-integration}
+    image: ${TEST_IMAGE:-openapi-test:0.1}
     volumes:
       - ../../tests:/app/tests
     command: >
