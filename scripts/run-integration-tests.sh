@@ -107,27 +107,13 @@ trap cleanup EXIT
 trap 'exit 130' INT TERM
 
 # Run integration tests and exit with the test container's status code.
-# Start in detached mode so we control when to stop, not Docker Compose.
+# Note: --exit-code-from waits for that container, without --abort-on-container-exit
+# the backend and setup-db can complete without stopping the whole stack.
 set +e
-docker compose up -d
-sleep 2  # Give containers a moment to start
-
-# Get the integration-tests container ID and wait for it to finish
-CONTAINER_ID=$(docker compose ps -q integration-tests 2>/dev/null)
-if [ -n "$CONTAINER_ID" ]; then
-    docker wait "$CONTAINER_ID"
-    TEST_EXIT_CODE=$?
-else
-    TEST_EXIT_CODE=1
-fi
-
-echo ""
-echo "=== Integration Test Results ==="
-docker compose logs integration-tests 2>/dev/null || true
-echo ""
-
-# Tear down all containers immediately when tests finish
-docker compose down --remove-orphans
+docker compose up --exit-code-from integration-tests
+TEST_EXIT_CODE=$?
+# Stop all containers immediately when tests finish
+docker compose stop
 set -e
 
 exit "$TEST_EXIT_CODE"
