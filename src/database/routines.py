@@ -28,3 +28,13 @@ def remove_routine(db: Session, routine_id: int):
     except Exception as e:
         db.rollback()
         raise e
+    
+
+def update_routine_db(db: Session, routine: Routine):
+    try:
+        db.add(routine)
+        db.commit()
+        db.refresh(routine)
+    except Exception as e:
+        db.rollback()
+        raise e
