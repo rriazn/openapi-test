@@ -69,7 +69,7 @@ export PRODUCTION_IMAGE
 export TEST_IMAGE
 
 cleanup() {
-    local exit_code=$?
+    local exit_code=${1:-$?}
     
     # If tests failed and not in debug mode, capture logs for inspection
     if [ "$exit_code" -ne 0 ] && [ "$DEBUG" = false ]; then
@@ -103,8 +103,8 @@ cleanup() {
 
 
 # Always clean up containers (success, failure, or interruption).
-trap cleanup EXIT
-trap 'exit 130' INT TERM
+trap 'cleanup $?' EXIT
+trap 'cleanup 130' INT TERM
 
 # Start in detached mode so we control when to stop, not Docker Compose.
 set +e
