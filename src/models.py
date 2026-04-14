@@ -16,9 +16,9 @@ class User(SQLModel, table=True):
     hashed_password: str = Field()
 
 
-class ExerciseWorkoutLink(SQLModel, table=True):
-    __tablename__ = "exercise_workout_link"
-    workout_id: int = Field(foreign_key="workouts.id", primary_key=True)
+class ExerciseRoutineLink(SQLModel, table=True):
+    __tablename__ = "exercise_routine_link"
+    routine_id: int = Field(foreign_key="routines.id", primary_key=True)
     exercise_id: int = Field(foreign_key="exercises.id", primary_key=True)
 
 
@@ -29,9 +29,9 @@ class Exercise(SQLModel, table=True):
     type: ExerciseType = Field()
 
 
-class Workout(SQLModel, table=True):
-    __tablename__ = "workouts"
+class Routine(SQLModel, table=True):
+    __tablename__ = "routines"
     id: int = Field(default=None, primary_key=True)
     name: str = Field(index=True)
     user_name: str = Field(foreign_key="users.id")
-    exercises: List["Exercise"] = Relationship(link_model=ExerciseWorkoutLink)
+    exercises: List["Exercise"] = Relationship(link_model=ExerciseRoutineLink)

@@ -3,32 +3,32 @@ from .common import wait_for_api, authenticate_user, api_url
 import json
 
 
-def test_create_delete_workout():
+def test_create_delete_routine():
     wait_for_api()
 
     # Authenticate user
     token = authenticate_user()
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Create workout
-    response = make_request(f"{api_url()}/workouts", method="POST", headers={**headers, "Content-Type": "application/json"}, data=json.dumps({
-        "workout_name": "workout to delete",
+    # Create routine
+    response = make_request(f"{api_url()}/routines", method="POST", headers={**headers, "Content-Type": "application/json"}, data=json.dumps({
+        "routine_name": "routine to delete",
         "exercise_ids": []
     }))
-    assert response["status"] == 200, "Should return 200 for workout creation"
+    assert response["status"] == 200, "Should return 200 for routine creation"
     data = response["json"]()
-    workout_id = data["id"]
+    routine_id = data["id"]
     
-    # Verify workout was created
-    response = make_request(f"{api_url()}/workouts/{workout_id}", headers=headers)
+    # Verify routine was created
+    response = make_request(f"{api_url()}/routines/{routine_id}", headers=headers)
     assert response["status"] == 200
-    assert response["json"]()["name"] == "workout to delete", "Workout name should match"
+    assert response["json"]()["name"] == "routine to delete", "Routine name should match"
     
-    # Delete workout
-    response = make_request(f"{api_url()}/workouts/{workout_id}", method="DELETE", headers=headers)
+    # Delete routine
+    response = make_request(f"{api_url()}/routines/{routine_id}", method="DELETE", headers=headers)
     assert response["status"] == 200
-    assert response["json"]()["message"] == "Workout deleted successfully", "Delete message should match"
+    assert response["json"]()["message"] == "Routine deleted successfully", "Delete message should match"
     
-    # Verify workout was deleted
-    response = make_request(f"{api_url()}/workouts/{workout_id}", headers=headers)
-    assert response["status"] == 404, "Should return 404 for deleted workout"
+    # Verify routine was deleted
+    response = make_request(f"{api_url()}/routines/{routine_id}", headers=headers)
+    assert response["status"] == 404, "Should return 404 for deleted routine"
