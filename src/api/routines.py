@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session
 
-from api.routines_specs import ActionResponse, RoutineCreateResponse, RoutineGetResponse, RoutineCreateRequest, RoutineDetailResponse, RoutineGetListItem
+from api.routines_specs import ActionResponse, RoutineCreateResponse, RoutineEditResponse, RoutineGetResponse, RoutineCreateRequest, RoutineEditRequest, RoutineDetailResponse, RoutineGetListItem
 from auth_utils import get_username_from_token
+from controller.routines import update_routine
 from database.db import get_db
 from database.routines import get_routines_for_user, insert_routine, get_routine_by_id, remove_routine
 from database.exercises import get_exercise_by_id
@@ -27,10 +28,8 @@ def get_routine_detail(routine_id: int, token: str = Depends(oauth2_scheme), db:
     """Get details of a specific routine."""
     username = get_username_from_token(token)
     routine = get_routine_by_id(db, routine_id)
-    if not routine:
+    if not routine or routine.user_name != username:
         raise HTTPException(status_code=404, detail="Routine not found")
-    if routine.user_name != username:
-        raise HTTPException(status_code=403, detail="User is not the owner of this routine")
     return RoutineDetailResponse(
         name=routine.name,
         owner=routine.user_name,
@@ -71,12 +70,43 @@ def delete_routine(routine_id: int, token: str = Depends(oauth2_scheme), db: Ses
     """Delete a routine owned by the user."""
     username = get_username_from_token(token)
     routine = get_routine_by_id(db, routine_id)
-    if not routine:
+    if not routine or routine.user_name != username:
         raise HTTPException(status_code=404, detail="Routine not found")
-    if routine.user_name != username:
-        raise HTTPException(status_code=403, detail="User is not the owner of this routine")
     try:
         remove_routine(db, routine_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     return ActionResponse(message="Routine deleted successfully")
+
+
+@router.put("/routines/{routine_id}", response_model=RoutineEditResponse)
+def edit_routine(routine_id: int, request: RoutineEditRequest, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Edit a routine owned by the user."""
+    username = get_username_from_token(token)
+    routine = get_routine_by_id(db, routine_id)
+    if not routine or routine.user_name != username:
+        raise HTTPException(status_code=404, detail="Routine not found")
+    
+    exercises_add = []
+    for exercise_id in request.exercise_add:
+        exercise = get_exercise_by_id(db, exercise_id)
+        if not exercise:
+            raise HTTPException(status_code=404, detail=f"Exercise with id {exercise_id} not found")
+        exercises_add.append(exercise)
+    
+    exercises_remove = []
+    for exercise_id in request.exercise_remove:
+        exercise = get_exercise_by_id(db, exercise_id)
+        if not exercise:
+            raise HTTPException(status_code=404, detail=f"Exercise with id {exercise_id} not found")
+        exercises_remove.append(exercise)
+
+    try:
+        routine = update_routine(db, routine, request.routine_name, exercises_add, exercises_remove)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    return RoutineEditResponse(
+        name=routine.name,
+        exercises=[exercise.name for exercise in routine.exercises]
+    )
