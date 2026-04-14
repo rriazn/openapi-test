@@ -9,6 +9,11 @@ class ExerciseType(str, enum.Enum):
     FL = "flexibility"
 
 
+class WorkoutStatus(str, enum.Enum):
+    RUNNING = "running"
+    STOPPED = "stopped"
+
+
 class User(SQLModel, table=True):
     __tablename__ = "users"
     id: int = Field(default=None, primary_key=True)
@@ -19,6 +24,12 @@ class User(SQLModel, table=True):
 class ExerciseRoutineLink(SQLModel, table=True):
     __tablename__ = "exercise_routine_link"
     routine_id: int = Field(foreign_key="routines.id", primary_key=True)
+    exercise_id: int = Field(foreign_key="exercises.id", primary_key=True)
+
+
+class ExerciseWorkoutLink(SQLModel, table=True):
+    __tablename__ = "exercise_workout_link"
+    workout_id: int = Field(foreign_key="workouts.id", primary_key=True)
     exercise_id: int = Field(foreign_key="exercises.id", primary_key=True)
 
 
@@ -35,3 +46,12 @@ class Routine(SQLModel, table=True):
     name: str = Field(index=True)
     user_name: str = Field(foreign_key="users.id")
     exercises: List["Exercise"] = Relationship(link_model=ExerciseRoutineLink)
+
+
+class Workout(SQLModel, table=True):
+    __tablename__ = "workouts"
+    id: int = Field(default=None, primary_key=True)
+    routine_id: int = Field(foreign_key="routines.id")
+    date: str = Field()
+    exercises: List["Exercise"] = Relationship(link_model=ExerciseWorkoutLink)
+    status: WorkoutStatus = Field(default=WorkoutStatus.RUNNING)

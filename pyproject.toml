@@ -19,7 +19,7 @@ dependencies = [
 PYTHONPATH = "src"
 
 [tool.hatch.envs.default.scripts]
-backend = "python -c \"from api.main import main; main()\""
+backend = "python -c \"from main import main; main()\""
 backend-cli = "python src/cli.py {args:reset_db}"
 backend-integration-tests = "pytest tests/integration -v"
 
