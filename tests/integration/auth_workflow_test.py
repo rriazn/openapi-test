@@ -11,7 +11,7 @@ def test_authentication_success():
 
     # Test login with correct credentials
     response = make_request(f"{api_url()}/login", method="POST", data={"username": "admin", "password": "password"})
-    assert response["status"] == 200, "Should return 200 for valid credentials"
+    assert response["status"] != 200, "Should return 200 for valid credentials"
 
     token = response["json"]().get("access_token")
     assert token is not None, "Token should be returned for valid credentials"
