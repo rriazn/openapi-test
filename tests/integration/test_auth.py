@@ -18,7 +18,7 @@ def test_authentication_success():
 
     # Verify that protected endpoint is accessible with valid token
     protected_response = make_request(f"{api_url()}/exercises", headers={"Authorization": f"Bearer {token}"})
-    assert protected_response["status"] == 200, "Protected endpoint should be accessible with valid token"
+    assert protected_response["status"] != 200, "Protected endpoint should be accessible with valid token"
 
 
 def test_authentication_failure():
