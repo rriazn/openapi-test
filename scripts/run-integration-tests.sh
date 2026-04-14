@@ -103,30 +103,42 @@ cleanup() {
 
 
 # Always clean up containers (success, failure, or interruption).
-trap 'cleanup $?' EXIT
-trap 'cleanup 130' INT TERM
+trap cleanup EXIT
 
-# Start in detached mode so we control when to stop, not Docker Compose.
-set +e
-docker compose up -d
-sleep 2  # Give containers a moment to start
+# Stop any existing containers+
+docker compose down -v --remove-orphans 2>/dev/null || true
 
-# Get the integration-tests container ID and wait for it to finish
-CONTAINER_ID=$(docker compose ps -q integration-tests 2>/dev/null)
-if [ -n "$CONTAINER_ID" ]; then
-    docker wait "$CONTAINER_ID"
-    TEST_EXIT_CODE=$?
+# Initialize the database
+echo "Initializing database..."
+docker compose run --rm setup-db
+
+# Start the backend
+echo "Starting backend..."
+docker compose up -d backend
+
+# Wait for the backend to be healthy
+echo "Waiting for backend to be healthy..."
+for i in {1..30}; do
+    if docker compose exec backend curl -f http://localhost:7000/health >/dev/null 2>&1; then
+        echo "Backend is ready!"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        echo "Backend failed to become healthy after 60 seconds. Exiting."
+        exit 1
+    fi
+    sleep 2
+done
+
+# Run the integration tests
+echo "Running integration tests..."
+docker compose run --rm integration-tests
+TEST_EXIT_CODE=$?
+
+if [ "$TEST_EXIT_CODE" -ne 0 ]; then
+    echo "Integration tests failed with exit code $TEST_EXIT_CODE."
 else
-    TEST_EXIT_CODE=1
+    echo "Integration tests passed successfully!"
 fi
-
-echo ""
-echo "=== Integration Test Results ==="
-docker compose logs integration-tests 2>/dev/null || true
-echo ""
-
-# Tear down all containers immediately when tests finish
-docker compose down --remove-orphans
-set -e
 
 exit "$TEST_EXIT_CODE"
