@@ -16,7 +16,7 @@ if str(SRC_PATH) not in sys.path:
 os.environ["DATABASE_URL"] = "sqlite:///./test.db"
 
 from auth_utils import get_token_for_user
-from api.main import app
+from main import app
 from database.db import get_db, reset_db
 from database.users import create_user, get_user_by_username
 from models import Routine, Exercise, User

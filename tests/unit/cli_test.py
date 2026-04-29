@@ -1,5 +1,13 @@
 import subprocess
+import sys
+from pathlib import Path
 from models import ExerciseType
+
+
+def run_hatch_command(args):
+    python_exe = Path(sys.executable)
+    command = [str(python_exe), "-m", "hatch"] + args
+    subprocess.run(command, check=True)
 
 
 def test_reset_db(db_session):
@@ -9,7 +17,7 @@ def test_reset_db(db_session):
     create_user(db_session, "testuser", "testpassword")
 
     # Reset the database without creating a default user
-    subprocess.Popen("hatch run backend-cli reset-db", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "reset-db"])
 
     # Verify that the database is empty
     users = get_all_users(db_session)
@@ -19,7 +27,7 @@ def test_reset_db_create_user(db_session):
     from database.users import get_user_by_username
 
     # Reset the database and create a default user
-    subprocess.Popen("hatch run backend-cli reset-db --create-default-user", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "reset-db", "--create-default-user"])
 
     # Verify that the default user was created
     user = get_user_by_username(db_session, "admin")
@@ -34,7 +42,7 @@ def test_import_users(db_session, tmp_path):
     csv_file.write_text("username,password\nuser1,pass1\nuser2,pass2")
 
     # Import users from the CSV file
-    subprocess.Popen(f"hatch run backend-cli import-users {csv_file}", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "import-users", str(csv_file)])
 
     # Verify that the users were imported into the database
     user1 = get_user_by_username(db_session, "user1")
@@ -54,7 +62,7 @@ def test_import_users_duplicate(db_session, tmp_path):
     csv_file.write_text("username,password\nuser1,pass1\nuser2,pass2")
 
     # Import users from the CSV file
-    subprocess.Popen(f"hatch run backend-cli import-users {csv_file}", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "import-users", str(csv_file)])
 
     # Verify that the users were imported into the database
     user1 = get_user_by_username(db_session, "user1")
@@ -69,7 +77,7 @@ def test_add_exercise(db_session):
     from database.exercises import get_all_exercises
 
     # Add a new exercise
-    subprocess.Popen("hatch run backend-cli add-exercise Push-up RO", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "add-exercise", "Push-up", "RO"])
 
     # Verify that the exercise was added to the database
     exercises = get_all_exercises(db_session)
@@ -85,7 +93,7 @@ def test_import_exercises(db_session, tmp_path):
     csv_file.write_text("name,type\nSquat,WR\nRunning,CA")
 
     # Import exercises from the CSV file
-    subprocess.Popen(f"hatch run backend-cli import-exercises {csv_file}", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "import-exercises", str(csv_file)])
 
     # Verify that the exercises were imported into the database
     exercise1 = get_exercise_by_name(db_session, "Squat")
@@ -110,7 +118,7 @@ def test_import_exercises_duplicate(db_session, tmp_path):
     csv_file.write_text("name,type\nSquat,WR\nRunning,CA")
 
     # Import exercises from the CSV file
-    subprocess.Popen(f"hatch run backend-cli import-exercises {csv_file}", shell=True).wait()
+    run_hatch_command(["run", "backend-cli", "import-exercises", str(csv_file)])
 
     # Verify that the exercises were imported into the database
     exercise1 = get_exercise_by_name(db_session, "Squat")

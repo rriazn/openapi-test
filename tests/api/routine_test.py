@@ -22,9 +22,11 @@ def test_list_routine_not_owned(client: TestClient, token: str, routine_other_us
 def test_get_routine_details(client: TestClient, token: str, routine: Routine, exercise: Exercise):
     response = client.get(f"/api/routines/{routine.id}", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200
-    assert any(e == exercise.name for e in response.json()["exercises"]), "Exercise in routine should be listed in routine details"
-    assert response.json()["owner"] == routine.user_name, "Routine owner should match"
-    assert response.json()["name"] == routine.name, "Routine name should match"
+    routine_details = response.json()
+    routine_exercise_names = [e["name"] for e in routine_details["exercises"]]
+    assert any(e == exercise.name for e in routine_exercise_names), "Exercise in routine should be listed in routine details"
+    assert routine_details["owner"] == routine.user_name, "Routine owner should match"
+    assert routine_details["name"] == routine.name, "Routine name should match"
 
 
 def test_get_routine_details_not_owned(client: TestClient, token: str, routine_other_user: Routine):
@@ -45,10 +47,10 @@ def test_create_routine(client: TestClient, user_instance: Tuple[User, str], exe
         "exercise_ids": [exercise.id]
     }, headers={"Authorization": f"Bearer {user_instance[1]}"})
     assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "test routine", "Routine name should match"
-    assert data["owner"] == user_instance[0].username, "Routine owner should match"
-    assert any(e == exercise.name for e in data["exercises"]), "Created exercise should be in the routine details"
+    routine = response.json()["routine"]
+    assert routine["name"] == "test routine", "Routine name should match"
+    assert routine["user_name"] == user_instance[0].username, "Routine owner should match"
+    assert any(e["id"] == exercise.id for e in routine["exercises"]), "Created exercise should be in the routine details"
 
 
 def test_create_empty_routine(client: TestClient, user_instance: Tuple[User, str]):
@@ -57,10 +59,10 @@ def test_create_empty_routine(client: TestClient, user_instance: Tuple[User, str
         "exercise_ids": []
     }, headers={"Authorization": f"Bearer {user_instance[1]}"})
     assert response.status_code == 200
-    data = response.json()
-    assert data["name"] == "empty routine", "Routine name should match"
-    assert data["owner"] == user_instance[0].username, "Routine owner should match"
-    assert len(data["exercises"]) == 0, "Routine should have no exercises"
+    routine = response.json()["routine"]
+    assert routine["name"] == "empty routine", "Routine name should match"
+    assert routine["user_name"] == user_instance[0].username, "Routine owner should match"
+    assert len(routine["exercises"]) == 0, "Routine should have no exercises"
 
 
 def test_create_routine_exercise_does_not_exist(client: TestClient, token: str):
@@ -113,8 +115,9 @@ def test_edit_routine_add_exercise(client: TestClient, token: str, routine: Rout
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200, "Should return 200 for successful edit"
     assert response.json()["name"] == routine.name, "Routine name should not change"
-    assert any(e == exercise_2.name for e in response.json()["exercises"]), "Added exercise should be in routine details"
-    assert any(e == exercise.name for e in response.json()["exercises"]), "Existing exercise should still be in routine details"
+    routine_exercise_names = [e["name"] for e in response.json()["exercises"]]
+    assert any(e == exercise_2.name for e in routine_exercise_names), "Added exercise should be in routine details"
+    assert any(e == exercise.name for e in routine_exercise_names), "Existing exercise should still be in routine details"
 
 
 def test_edit_routine_add_duplicate_exercise(client: TestClient, token: str, routine: Routine, exercise: Exercise):
@@ -125,8 +128,9 @@ def test_edit_routine_add_duplicate_exercise(client: TestClient, token: str, rou
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200, "Should return 200 for successful edit"
     assert response.json()["name"] == routine.name, "Routine name should not change"
-    assert response.json()["exercises"].count(exercise.name) == 1, "Duplicate exercise should not be added to routine details"
-    assert any(e == exercise.name for e in response.json()["exercises"]), "Existing exercise should still be in routine details"
+    routine_exercise_names = [e["name"] for e in response.json()["exercises"]]
+    assert routine_exercise_names.count(exercise.name) == 1, "Duplicate exercise should not be added to routine details"
+    assert any(e == exercise.name for e in routine_exercise_names), "Existing exercise should still be in routine details"
 
 
 def test_edit_routine_add_exercise_does_not_exist(client: TestClient, token: str, routine: Routine):
@@ -146,7 +150,8 @@ def test_edit_routine_remove_exercise(client: TestClient, token: str, routine: R
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200, "Should return 200 for successful edit"
     assert response.json()["name"] == routine.name, "Routine name should not change"
-    assert all(e != exercise.name for e in response.json()["exercises"]), "Removed exercise should not be in routine details"
+    exercise_names = [e["name"] for e in response.json()["exercises"]]
+    assert all(e != exercise.name for e in exercise_names), "Removed exercise should not be in routine details"
 
 
 def test_edit_routine_remove_exercise_not_in_routine(client: TestClient, token: str, routine: Routine, exercise: Exercise, exercise_2: Exercise):
@@ -157,8 +162,9 @@ def test_edit_routine_remove_exercise_not_in_routine(client: TestClient, token: 
     }, headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 200, "Should return 200 for successful edit"
     assert response.json()["name"] == routine.name, "Routine name should not change"
-    assert all(e != exercise_2.name for e in response.json()["exercises"]), "Exercise that was not in routine should still not be in routine details"
-    assert response.json()["exercises"].count(exercise.name) == 1, "Exercise that was in routine should still be in routine details"
+    routine_exercise_names = [e["name"] for e in response.json()["exercises"]]
+    assert all(e != exercise_2.name for e in routine_exercise_names), "Exercise that was not in routine should still not be in routine details"
+    assert routine_exercise_names.count(exercise.name) == 1, "Exercise that was in routine should still be in routine details"
 
 
 def test_edit_routine_remove_exercise_does_not_exist(client: TestClient, token: str, routine: Routine):

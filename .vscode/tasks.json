@@ -4,8 +4,8 @@
         {
             "label": "Run API Tests",
             "type": "shell",
-            "command": ".\\.venv\\Scripts\\pytest.exe",
-            "args": ["tests/api"],
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": ["-m", "pytest", "tests/api"],
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -19,8 +19,8 @@
         {
             "label": "Run Unit Tests",
             "type": "shell",
-            "command": ".\\.venv\\Scripts\\pytest.exe",
-            "args": ["tests/unit"],
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": ["-m", "pytest", "tests/unit"],
             "group": {
                 "kind": "test",
                 "isDefault": false
@@ -34,8 +34,8 @@
         {
             "label": "Run All Tests",
             "type": "shell",
-            "command": ".\\.venv\\Scripts\\pytest.exe",
-            "args": ["tests/api", "tests/unit"],
+            "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe",
+            "args": ["-m", "pytest", "tests/api", "tests/unit"],
             "group": {
                 "kind": "test",
                 "isDefault": false

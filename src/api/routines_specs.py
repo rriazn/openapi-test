@@ -1,10 +1,18 @@
-from models import Routine
+from models import Exercise, Routine
 from pydantic import BaseModel, Field
 from typing import List
+
+class ExerciseBase(BaseModel):
+    model_config = {"from_attributes": True}
+    name: str = Field(description="Name of the exercise", example="Push-up")
+    type: str = Field(description="Type of the exercise", example="weight and reps")
+    id: int = Field(description="ID of the exercise", example=1)
+
 
 class RoutineGetListItem(BaseModel):
     id: int = Field(description="ID of the routine")
     name: str = Field(description="Name of the routine")
+
 
 class RoutineGetResponse(BaseModel):
     routines: List[RoutineGetListItem] = Field(description="List of all routines with their IDs and names for the user")
@@ -13,7 +21,7 @@ class RoutineGetResponse(BaseModel):
 class RoutineDetailResponse(BaseModel):
     name: str = Field(description="Name of the routine")
     owner: str = Field(description="Username of the routine owner")
-    exercises: List[str] = Field(description="List of exercise names included in the routine")
+    exercises: List[ExerciseBase] = Field(description="List of exercises included in the routine")
 
 
 class RoutineCreateRequest(BaseModel):
@@ -21,11 +29,15 @@ class RoutineCreateRequest(BaseModel):
     exercise_ids: List[int] = Field(description="List of exercise IDs to include in the routine")
 
 
-class RoutineCreateResponse(BaseModel):
+class RoutineCreateDetail(BaseModel):
     id: int = Field(description="ID of the created routine")
     name: str = Field(description="Name of the created routine")
-    owner: str = Field(description="Username of the routine owner")
-    exercises: List[str] = Field(description="List of exercise names included in the routine")
+    user_name: str = Field(description="Username of the routine owner")
+    exercises: List[ExerciseBase] = Field(description="List of exercises included in the created routine")
+
+
+class RoutineCreateResponse(BaseModel):
+    routine: RoutineCreateDetail = Field(description="Details of the created routine, including its ID, name, owner, and exercises")
 
 
 class RoutineEditRequest(BaseModel):
@@ -36,7 +48,7 @@ class RoutineEditRequest(BaseModel):
 
 class RoutineEditResponse(BaseModel):
     name: str = Field(description="Name of the edited routine")
-    exercises: List[str] = Field(description="Updated list of exercise names included in the routine")
+    exercises: List[ExerciseBase] = Field(description="Updated list of exercises included in the routine")
 
 
 class ActionResponse(BaseModel):

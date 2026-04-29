@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session
 
-from api.routines_specs import ActionResponse, RoutineCreateResponse, RoutineEditResponse, RoutineGetResponse, RoutineCreateRequest, RoutineEditRequest, RoutineDetailResponse, RoutineGetListItem
+from api.routines_specs import ActionResponse, RoutineCreateDetail, RoutineCreateResponse, RoutineEditResponse, RoutineGetResponse, RoutineCreateRequest, RoutineEditRequest, RoutineDetailResponse, RoutineGetListItem
 from auth_utils import get_username_from_token
 from controller.routines import update_routine
 from database.db import get_db
@@ -33,7 +33,7 @@ def get_routine_detail(routine_id: int, token: str = Depends(oauth2_scheme), db:
     return RoutineDetailResponse(
         name=routine.name,
         owner=routine.user_name,
-        exercises=[exercise.name for exercise in routine.exercises]
+        exercises=routine.exercises
     )
 
 
@@ -58,10 +58,12 @@ def create_routine(request: RoutineCreateRequest, token: str = Depends(oauth2_sc
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     return RoutineCreateResponse(
-        id=routine.id,
-        name=routine.name,
-        owner=routine.user_name,
-        exercises=[exercise.name for exercise in routine.exercises]
+        routine=RoutineCreateDetail(
+            id=routine.id,
+            name=routine.name,
+            user_name=routine.user_name,
+            exercises=routine.exercises or []
+        )
     )
 
 
@@ -108,5 +110,5 @@ def edit_routine(routine_id: int, request: RoutineEditRequest, token: str = Depe
     
     return RoutineEditResponse(
         name=routine.name,
-        exercises=[exercise.name for exercise in routine.exercises]
+        exercises=routine.exercises
     )
